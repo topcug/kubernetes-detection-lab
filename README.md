@@ -1,24 +1,17 @@
-# Kube Detection Labs
+# kubernetes-detection-lab
 
 Open detection content for Kubernetes and cloud-native security teams.
 
-Each lab covers one real threat scenario: what it looks like at runtime, why it matters, how to detect it with Falco, how to triage the alert, and how to remediate the underlying condition.
+Each lab covers one real threat scenario: what it looks like at runtime, why it matters, how to detect it, how to triage the alert, and how to remediate the underlying condition. All content is MIT licensed and designed to be used directly, not just read.
 
-All content is free, MIT licensed, and designed to be used directly — not just read.
-
----
-
-## What is in this repo
+## Repository structure
 
 ```
-labs/          — Detection labs (one folder per scenario)
-falco-rules/   — Standalone Falco rules, ready to load
-sigma-rules/   — Sigma-format detection specs for backend portability
-docs/          — Supporting documentation (setup guides, glossary)
-scripts/       — Helper scripts (test simulation, rule validation)
+labs/           — Detection labs (one folder per scenario)
+falco-rules/    — Standalone Falco rules, ready to load
+sigma-rules/    — Sigma-format detection specs for SIEM portability
+docs/           — Setup guides and supporting documentation
 ```
-
----
 
 ## Labs
 
@@ -36,63 +29,35 @@ scripts/       — Helper scripts (test simulation, rule validation)
 | [LAB-010](labs/lab-010-mutable-image-tag/) | Container running from mutable image tag | T1525 | Medium |
 | [LAB-011](labs/lab-011-unexpected-outbound-connection/) | Unexpected outbound network connection | T1071 | High |
 | [LAB-012](labs/lab-012-host-path-escape/) | Container escape via host path mount | T1611 | Critical |
+| [LAB-013](labs/lab-013-sqli-detection/) | SQL injection detection with Zeek, Falco, and Sigma | T1190 | High |
 
-New labs are added regularly. Watch the repo to get notified.
+## How to use a lab
 
----
+Each lab folder contains a README with the threat scenario, attack simulation steps, a Falco detection rule, a triage guide, remediation steps, and false positive notes.
 
-## How to use this
-
-### Read a lab
-
-Each lab folder contains a `README.md` with:
-- Threat scenario
-- Why it matters
-- Attack simulation steps
-- Falco detection rule
-- Triage guide
-- Remediation (immediate + structural)
-- False positive notes
-
-### Load a Falco rule
-
-Rules are also available as standalone files in `falco-rules/`. To load a single rule:
+To load a single Falco rule:
 
 ```bash
 falco -r falco-rules/shell-in-container.yaml
 ```
 
-To load all rules:
-
-```bash
-falco -r falco-rules/
-```
-
-### Use a Sigma rule
-
-Sigma rules in `sigma-rules/` can be converted to your SIEM's format using [sigma-cli](https://github.com/SigmaHQ/sigma-cli):
+To convert a Sigma rule to your SIEM format:
 
 ```bash
 sigma convert -t splunk sigma-rules/shell-in-container.yml
 sigma convert -t elastic-dsl sigma-rules/shell-in-container.yml
 ```
 
----
-
 ## Requirements
 
-- Kubernetes cluster (local: kind, k3s, minikube — or any managed cluster)
+- Kubernetes cluster (kind, k3s, minikube, or any managed cluster)
 - [Falco](https://falco.org/docs/getting-started/) installed as a DaemonSet or in eBPF mode
 - `kubectl` access to your test cluster
 - Optional: Kubernetes audit logging enabled for API-level detections
 
----
-
 ## MITRE ATT&CK coverage
 
-This repo maps detections to the [MITRE ATT&CK Containers matrix](https://attack.mitre.org/matrices/enterprise/containers/).
-
-Current coverage:
+Labs map to the [MITRE ATT&CK Containers matrix](https://attack.mitre.org/matrices/enterprise/containers/).
 
 | Tactic | Techniques covered |
 |--------|--------------------|
@@ -103,34 +68,12 @@ Current coverage:
 | Exfiltration | T1041 |
 | Command and Control | T1071 |
 | Impact | T1496 |
-
-Coverage expands with each new lab.
-
----
+| Initial Access | T1190 |
 
 ## Contributing
 
-Labs follow a standard structure. To contribute a new lab:
-
-1. Copy the `labs/_template/` folder
-2. Fill in all sections of the README
-3. Add a corresponding Falco rule to `falco-rules/`
-4. Add a Sigma rule to `sigma-rules/` if applicable
-5. Open a PR with a clear description of the threat scenario
-
-See [docs/contributing.md](docs/contributing.md) for the full guide.
-
----
+Labs follow a standard structure. Copy `labs/_template/`, fill in all sections, add a Falco rule to `falco-rules/` and a Sigma rule to `sigma-rules/` if applicable, then open a PR with a description of the threat scenario. See [docs/contributing.md](docs/contributing.md) for details.
 
 ## License
 
-MIT. Use freely, fork, adapt, build on top of.
-
----
-
-## Related
-
-- [ClarifyIntel](https://clarifyintel.com) — detection packs, Pod Security rollout, and supply chain reviews for cloud-native teams
-- [Kube Detection Labs](https://clarifyintel.com/labs/) — web version of these labs with additional context
-- [Falco](https://falco.org) — the runtime security tool these rules are built for
-- [MITRE ATT&CK Containers](https://attack.mitre.org/matrices/enterprise/containers/) — the threat framework these labs map to
+[MIT](./LICENSE)
