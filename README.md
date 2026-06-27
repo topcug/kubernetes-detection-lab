@@ -1,5 +1,9 @@
 # kubernetes-detection-lab
 
+<p align="center">
+  <img src="./falco.png" alt="kubernetes-detection-lab" width="400" />
+</p>
+
 Open detection content for Kubernetes and cloud-native security teams. Each lab covers one real threat scenario: what it looks like at runtime, why it matters, how to detect it, how to triage the alert, and how to remediate the underlying condition. All content is MIT licensed and designed to be used directly, not just read.
 
 ## Repository structure
