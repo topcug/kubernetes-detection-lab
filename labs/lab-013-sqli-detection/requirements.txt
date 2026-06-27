@@ -1,0 +1,4 @@
+sigma-cli
+pysigma
+pysigma-backend-elasticsearch>=1.1.0
+pysigma-backend-loki>=0.12.4

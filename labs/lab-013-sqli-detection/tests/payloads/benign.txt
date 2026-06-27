@@ -1,0 +1,38 @@
+# Normal product searches
+/rest/products/search?q=laptop
+/rest/products/search?q=apple
+/rest/products/search?q=juice
+/rest/products/search?q=banana
+/rest/products/search?q=coffee
+/rest/products/search?q=tea
+
+# Searches with special characters (legitimate)
+/rest/products/search?q=apple%20juice
+/rest/products/search?q=green%20tea
+/rest/products/search?q=product-name
+/rest/products/search?q=item_123
+/rest/products/search?q=brand@company.com
+
+# Searches with quotes (legitimate uses)
+/rest/products/search?q="premium coffee"
+/rest/products/search?q='organic tea'
+/rest/products/search?q=12" laptop
+/rest/products/search?q=5' cable
+
+# Searches with numbers and operators (legitimate)
+/rest/products/search?q=price>100
+/rest/products/search?q=model=2024
+/rest/products/search?q=version-1.5
+/rest/products/search?q=size<10
+
+# Empty and minimal searches
+/rest/products/search?q=
+/rest/products/search?q=a
+/rest/products/search?q=1
+/rest/products/search?q=test
+
+# Legitimate technical terms that might contain SQL keywords
+/rest/products/search?q=database%20book
+/rest/products/search?q=select%20button
+/rest/products/search?q=union%20jack
+/rest/products/search?q=order%20form

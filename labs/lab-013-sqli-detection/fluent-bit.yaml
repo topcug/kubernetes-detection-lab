@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit
+  namespace: default
+data:
+  zeek.conf: |
+    [SERVICE]
+        Flush         1
+        Daemon        Off
+        Log_Level     info
+
+    # --- INPUTS ---
+
+    # Zeek HTTP (confirmed path: /http.log)
+    [INPUT]
+        Name              tail
+        Path              /var/log/zeek/current/http.log
+        Tag               zeek.http
+        Parser            json
+        Read_from_Head    True
+        DB                /var/log/flb_zeek_http.db
+
+    # Falco container logs (as you had)
+    [INPUT]
+        Name              tail
+        Path              /var/log/containers/*falco*.log
+        Tag               falco
+        Parser            docker
+        DB                /var/log/flb_falco.db
+        Read_from_Head    True
+
+    # ModSecurity audit log (optional)
+    [INPUT]
+        Name              tail
+        Path              /var/log/modsec_audit.log
+        Parser            json
+        Tag               waf.modsec
+        Read_from_Head    True
+
+    # --- OUTPUTS ---
+
+    # WAF to Loki
+    [OUTPUT]
+        Name              loki
+        Match             waf.modsec
+        Host              loki.default.svc.cluster.local
+        Port              3100
+        Uri               /loki/api/v1/push
+        Line_Format       json
+        Labels            job=waf,service=ingress-nginx,host=${HOSTNAME}
+
+    # Falco to Loki
+    [OUTPUT]
+        Name              loki
+        Match             falco
+        Host              loki.default.svc.cluster.local
+        Port              3100
+        Uri               /loki/api/v1/push
+        Line_Format       json
+        Labels            job=falco
+
+    # Zeek (HTTP) to Loki — canonical label per your requirement
+    [OUTPUT]
+        Name        loki
+        Match       zeek.*
+        Host        loki.default.svc.cluster.local
+        Port        3100
+        Uri         /loki/api/v1/push
+        Line_Format json
+        Labels      job=default/zeek,stream=$tag
+        Remove_Keys tag

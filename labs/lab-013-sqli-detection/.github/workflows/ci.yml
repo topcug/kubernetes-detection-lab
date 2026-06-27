@@ -1,0 +1,84 @@
+name: build-sigma
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install pysigma pysigma-backend-loki pysigma-backend-elasticsearch pysigma-backend-splunk
+
+      - name: List Sigma files
+        run: |
+          echo "Found Sigma files:"
+          find . -name "*.yml" -o -name "*.yaml" | grep -E "(sigma|detection)" || echo "No Sigma files found"
+          ls -la *.yml *.yaml 2>/dev/null || echo "No YAML files in root"
+
+      - name: Compile to Elasticsearch (Lucene)
+        run: |
+          . .venv/bin/activate
+          mkdir -p build/lucene
+          for f in *.yml *.yaml; do
+            [ -e "$f" ] || continue
+            # Skip non-sigma files
+            if grep -q "logsource\|detection:" "$f" 2>/dev/null; then
+              base=$(basename "$f"); base="${base%.*}"
+              echo "Compiling $f to Lucene..."
+              sigma convert -t lucene "$f" > "build/lucene/${base}.lucene" || echo "Failed to compile $f to Lucene"
+            fi
+          done
+
+      - name: Compile to Loki (LogQL)
+        run: |
+          . .venv/bin/activate
+          mkdir -p build/loki
+          for f in *.yml *.yaml; do
+            [ -e "$f" ] || continue
+            # Skip non-sigma files
+            if grep -q "logsource\|detection:" "$f" 2>/dev/null; then
+              base=$(basename "$f"); base="${base%.*}"
+              echo "Compiling $f to LogQL..."
+              sigma convert -t loki "$f" > "build/loki/${base}.logql" || echo "Failed to compile $f to LogQL"
+            fi
+          done
+
+      - name: Compile to Splunk (SPL)
+        run: |
+          . .venv/bin/activate
+          mkdir -p build/splunk
+          for f in *.yml *.yaml; do
+            [ -e "$f" ] || continue
+            # Skip non-sigma files
+            if grep -q "logsource\|detection:" "$f" 2>/dev/null; then
+              base=$(basename "$f"); base="${base%.*}"
+              echo "Compiling $f to SPL..."
+              sigma convert -t splunk "$f" > "build/splunk/${base}.spl" || echo "Failed to compile $f to SPL"
+            fi
+          done
+
+      - name: Verify build output
+        run: |
+          echo "Build directory contents:"
+          find build/ -type f -exec echo "  {}" \; -exec head -3 "{}" \; 2>/dev/null || echo "No build output found"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigma-build
+          path: build/
+        if: always()

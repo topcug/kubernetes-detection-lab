@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: juice-shop
+  labels:
+    app: juice-shop
+spec:
+  hostNetwork: true
+  containers:
+  - name: juice-shop
+    image: bkimminich/juice-shop
+    ports:
+    - containerPort: 3000
+    env:
+    - name: NODE_ENV
+      value: "production"

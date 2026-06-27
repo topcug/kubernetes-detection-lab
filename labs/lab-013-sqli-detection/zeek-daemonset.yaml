@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zeek
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: zeek }
+  template:
+    metadata:
+      labels: { app: zeek }
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: zeek
+          image: zeek/zeek:latest
+          securityContext:
+            privileged: true
+            capabilities:
+              add: ["NET_ADMIN","NET_RAW"]
+          volumeMounts:
+            - name: zeek-logs
+              mountPath: /var/log/zeek/current
+            - name: zeek-scripts
+              mountPath: /scripts
+          command: ["/bin/bash", "-ce"]
+          args:
+            - |
+              set -euo pipefail
+              mkdir -p /var/log/zeek/current
+              echo "[*] Zeek writing to /var/log/zeek/current"
+              cd /var/log/zeek/current
+              exec zeek -i eth0 -C /scripts/detect-sqli.zeek
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+      volumes:
+        - name: zeek-logs
+          hostPath:
+            path: /var/log/zeek/current
+            type: DirectoryOrCreate
+        - name: zeek-scripts
+          configMap:
+            name: zeek-scripts

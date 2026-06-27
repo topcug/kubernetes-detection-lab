@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ---- Config ----
+TARGET_BASE="${TARGET_BASE:-http://192.168.49.2:30602/rest/products/search}"
+PCAP_OUT="${PCAP_OUT:-sample-sqli.pcap}"
+CAP_SECONDS="${CAP_SECONDS:-10}"
+
+# ---- Resolve capture interface for the target route ----
+target_host="$(printf '%s' "$TARGET_BASE" | awk -F/ '{print $3}' | awk -F: '{print $1}')"
+target_ip="$(getent ahostsv4 "$target_host" | awk '{print $1; exit}')"
+iface="$(ip route get "$target_ip" | awk '{for (i=1;i<=NF;i++) if ($i=="dev"){print $(i+1); exit}}')"
+
+echo "[*] Target: $TARGET_BASE"
+echo "[*] Route:  $target_ip via $iface"
+echo "[*] Capturing to: $PCAP_OUT for ${CAP_SECONDS}s"
+
+# ---- Start capture (payload-carrying TCP only, to keep file small) ----
+sudo tcpdump -i "$iface" -s 0 -w "$PCAP_OUT" \
+  "host $target_ip and tcp port $(printf '%s' "$TARGET_BASE" | awk -F: '{print $3}' | awk -F/ '{print $1}') and (((ip[2:2]-((ip[0]&0xf)<<2))-((tcp[12]>>4)<<2)) > 0)" \
+  >/dev/null 2>&1 &
+tcpdump_pid=$!
+sleep 1
+
+# ---- Drive traffic: malicious + benign ----
+base_url="$(printf '%s' "$TARGET_BASE" | awk -F\\? '{print $1}')"
+
+curl -sS -G --data-urlencode "q=regression-test' OR 1=1--" "$base_url" >/dev/null
+curl -sS -G --data-urlencode "q=\" OR \"1\"=\"1" "$base_url" >/dev/null
+curl -sS -G --data-urlencode "q=%' UNION SELECT NULL--" "$base_url" >/dev/null
+curl -sS -G --data-urlencode "q=UNION SELECT 1,2,3--" "$base_url" >/dev/null
+
+curl -sS -G --data-urlencode "q=apple" "$base_url" >/dev/null
+curl -sS -G --data-urlencode "q=banana" "$base_url" >/dev/null
+curl -sS -G --data-urlencode "q=juice" "$base_url" >/dev/null
+
+# ---- Let tcpdump see responses, then stop ----
+sleep "$CAP_SECONDS"
+kill -INT "$tcpdump_pid" >/dev/null 2>&1 || true
+wait "$tcpdump_pid" 2>/dev/null || true
+
+echo "[*] Done. Wrote $(stat -c%s "$PCAP_OUT") bytes to $PCAP_OUT"
