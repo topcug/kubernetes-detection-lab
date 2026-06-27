@@ -1,8 +1,6 @@
 # kubernetes-detection-lab
 
-Open detection content for Kubernetes and cloud-native security teams.
-
-Each lab covers one real threat scenario: what it looks like at runtime, why it matters, how to detect it, how to triage the alert, and how to remediate the underlying condition. All content is MIT licensed and designed to be used directly, not just read.
+Open detection content for Kubernetes and cloud-native security teams. Each lab covers one real threat scenario: what it looks like at runtime, why it matters, how to detect it, how to triage the alert, and how to remediate the underlying condition. All content is MIT licensed and designed to be used directly, not just read.
 
 ## Repository structure
 
@@ -72,7 +70,7 @@ Labs map to the [MITRE ATT&CK Containers matrix](https://attack.mitre.org/matric
 
 ## Contributing
 
-Labs follow a standard structure. Copy `labs/_template/`, fill in all sections, add a Falco rule to `falco-rules/` and a Sigma rule to `sigma-rules/` if applicable, then open a PR with a description of the threat scenario. See [docs/contributing.md](docs/contributing.md) for details.
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for how to add a lab or suggest a change.
 
 ## License
 
