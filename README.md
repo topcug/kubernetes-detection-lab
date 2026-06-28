@@ -1,5 +1,7 @@
 # kubernetes-detection-lab
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 <p align="center">
   <img src="./falco.png" alt="kubernetes-detection-lab" width="400" />
 </p>
